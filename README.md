@@ -21,14 +21,14 @@ O schema (tabelas, RLS, triggers) está em `supabase/functions` e foi aplicado
 diretamente ao projeto via migrações. Para voltar a aplicar alterações,
 usa o CLI do Supabase ou o painel do projeto.
 
-A Edge Function `verify-payment` (verificação de comprovativos por IA) precisa
-dos seguintes secrets configurados no projeto Supabase (nunca no `.env` do
-frontend):
+A Edge Function `verify-payment` (verificação de comprovativos por IA, usando a
+API do Google Gemini) precisa dos seguintes secrets configurados no projeto
+Supabase (nunca no `.env` do frontend):
 
 ```bash
 supabase secrets set \
-  ANTHROPIC_API_KEY=sk-... \
-  ANTHROPIC_VERIFY_MODEL=claude-sonnet-4-6 \
+  GEMINI_API_KEY=... \
+  GEMINI_VERIFY_MODEL=gemini-2.5-flash \
   MCX_NUMBER=943231005 \
   --project-ref <project-ref>
 ```
