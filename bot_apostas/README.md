@@ -2,20 +2,33 @@
 
 ## Início rápido
 
-1. Instale as dependências:
+1. Crie o ambiente e instale as dependências (cria também o `.env` a partir
+   do exemplo, se ainda não existir):
    ```
+   ./setup.sh
+   ```
+   Ou manualmente:
+   ```
+   python3 -m venv venv
+   source venv/bin/activate
    pip install -r requirements.txt
-   ```
-
-2. Copie `.env.example` para `.env` e preencha com suas credenciais reais:
-   ```
    cp .env.example .env
    ```
-   (veja no docstring de `main.py` como obter cada chave — FOOTBALL_API_KEY,
-   ODDS_API_KEY, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)
 
-3. Execute:
+2. Preencha o `.env` com as suas credenciais reais (FOOTBALL_API_KEY,
+   ODDS_API_KEY, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID). Veja no docstring de
+   `main.py` o passo a passo de como obter cada uma.
+
+3. (Opcional) Valide a lógica de negócio sem precisar de credenciais nem
+   rede, usando dados fictícios:
    ```
+   source venv/bin/activate
+   python smoke_test.py
+   ```
+
+4. Execute o bot (requer as credenciais reais no `.env`):
+   ```
+   source venv/bin/activate
    python main.py
    ```
 
@@ -32,6 +45,8 @@
 | `bankroll.py` | Cálculo de stake, odd total e retorno |
 | `telegram_notifier.py` | Envio do relatório diário |
 | `main.py` | Orquestrador do pipeline + instruções completas de deploy em VPS |
+| `setup.sh` | Cria o venv, instala dependências e o `.env` inicial |
+| `smoke_test.py` | Testa a lógica de negócio (Poisson/value/bankroll) com dados fictícios |
 
 ## Deploy em produção
 
