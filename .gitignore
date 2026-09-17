@@ -27,3 +27,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# bot_apostas (Python)
+bot_apostas/venv
+bot_apostas/__pycache__
+bot_apostas/*.db
+bot_apostas/bot.log
