@@ -10,8 +10,8 @@ e NUNCA devem ser escritas diretamente no código-fonte, especialmente em produ�
 Como definir as variáveis de ambiente no Linux/VPS (bash):
     export FOOTBALL_API_KEY="sua_chave_aqui"
     export ODDS_API_KEY="sua_chave_aqui"
-    export TELEGRAM_TOKEN="seu_token_aqui"
-    export TELEGRAM_CHAT_ID="seu_chat_id_aqui"
+    export WHATSAPP_PHONE="seu_numero_com_codigo_do_pais"
+    export WHATSAPP_APIKEY="sua_apikey_do_callmebot"
 
 Ou, de forma persistente, crie um arquivo .env (usando python-dotenv) e
 carregue-o no início da execução (já implementado abaixo).
@@ -33,9 +33,8 @@ FOOTBALL_API_BASE_URL = f"https://{FOOTBALL_API_HOST}"
 ODDS_API_KEY = os.getenv("ODDS_API_KEY", "")
 ODDS_API_BASE_URL = "https://api.the-odds-api.com/v4"
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
-TELEGRAM_API_BASE_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "")
+WHATSAPP_APIKEY = os.getenv("WHATSAPP_APIKEY", "")
 
 # ----------------------------------------------------------------------
 # PARÂMETROS DE NEGÓCIO (gestão de banca e critérios de seleção)
@@ -83,8 +82,8 @@ def validar_credenciais() -> list:
         faltando.append("FOOTBALL_API_KEY")
     if not ODDS_API_KEY:
         faltando.append("ODDS_API_KEY")
-    if not TELEGRAM_TOKEN:
-        faltando.append("TELEGRAM_TOKEN")
-    if not TELEGRAM_CHAT_ID:
-        faltando.append("TELEGRAM_CHAT_ID")
+    if not WHATSAPP_PHONE:
+        faltando.append("WHATSAPP_PHONE")
+    if not WHATSAPP_APIKEY:
+        faltando.append("WHATSAPP_APIKEY")
     return faltando
