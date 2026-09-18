@@ -47,6 +47,11 @@ def enviar_mensagem(texto: str) -> bool:
     else:
         dados["Body"] = texto
 
+    logger.info(
+        "Enviando ao WhatsApp (Twilio) | From=%s | To=%s | ContentSid=%s",
+        dados["From"], dados["To"], dados.get("ContentSid", "(nenhum — usando Body)")
+    )
+
     for tentativa in range(1, config.HTTP_MAX_TENTATIVAS + 1):
         try:
             resp = requests.post(
