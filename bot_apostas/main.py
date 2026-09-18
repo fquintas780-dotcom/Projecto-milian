@@ -63,19 +63,25 @@ COMO OBTER AS CREDENCIAIS (API KEYS)
    Contas Twilio criadas recentemente são obrigadas pela política do
    WhatsApp/Meta a usar um "Content Template" em vez de texto livre —
    sem isto o envio falha com o erro 21654 "ContentSid Required".
-   a) No Twilio Console, use a busca "Jump to..." e procure por
-      "Content Template Builder" (ou aceda a
-      https://console.twilio.com/us1/develop/sms/content-template-builder)
-   b) Clique em "Create new" → escolha o tipo "Text" (twilio/text)
-   c) Preencha: Friendly Name (ex.: "bot_apostas_relatorio"), Language
-      (Portuguese, ou English se não disponível), Category "Utility"
-   d) No corpo da mensagem ("Body"), escreva apenas: {{1}}
-      (uma única variável — o bot preenche-a com o texto completo do
-      relatório em cada envio)
-   e) Guarde/submeta o template. Contas de teste/Sandbox costumam ser
-      aprovadas automaticamente; se ficar "Pending", aguarde a aprovação
-   f) Copie o "Content SID" gerado (começa por "HX...") → é o seu
-      TWILIO_CONTENT_SID
+
+   Contas Trial (grátis) NÃO conseguem registar um WhatsApp Sender nem
+   submeter um template próprio para aprovação (erro: "Please upgrade
+   your account to submit a WhatsApp Sender") — nesse caso, use um dos
+   templates pré-aprovados que o próprio Twilio disponibiliza no Sandbox:
+
+   a) Aceda a https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn
+   b) Vá à etapa "Business-Initiated message"
+   c) No dropdown "Content Template Type", escolha **"Verification Codes"**
+      (texto fixo mínimo: "{{1}} is your verification code. For your
+      security, do not share this code." — a variável {{1}} recebe o
+      relatório completo; a frase fixa fica no fim, um pouco estranha,
+      mas funcional enquanto a conta for Trial)
+   d) No painel de código à direita (separador "curl"), copie o valor de
+      "ContentSid=HX..." da URL — é o seu TWILIO_CONTENT_SID
+
+   Se mais tarde fizer upgrade da conta Twilio (paga), pode em vez disso
+   criar um template próprio sem a frase fixa — ver documentação em
+   https://console.twilio.com/us1/develop/sms/content-template-builder
 
 
 ================================================================================
