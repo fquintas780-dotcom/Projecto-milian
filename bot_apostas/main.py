@@ -27,13 +27,15 @@ e fácil de depurar em produção.
 COMO OBTER AS CREDENCIAIS (API KEYS)
 ================================================================================
 
-1) FOOTBALL_API_KEY (calendário e histórico de gols)
-   - Acesse https://www.api-football.com/ (ou https://rapidapi.com/api-sports/api/api-football)
-   - Crie uma conta gratuita (plano free tem limite de requisições/dia)
-   - No painel, copie sua "API Key"
-   - Defina FOOTBALL_API_HOST conforme o provedor escolhido:
-       - Direto no api-football.com: "v3.football.api-sports.io" (padrão já usado aqui)
-       - Via RapidAPI: "api-football-v1.p.rapidapi.com" (requer ajuste de headers)
+1) FOOTBALL_DATA_API_KEY (calendário e histórico de gols)
+   - Acesse https://www.football-data.org/client/register e crie uma conta
+     gratuita (plano free dá acesso à época ATUAL de 12 competições,
+     incluindo as 6 ligas monitoradas por este bot, com limite de 10
+     pedidos/minuto)
+   - No email de confirmação (ou em https://www.football-data.org/client/register
+     depois de logar), copie o seu "Token" — é o seu FOOTBALL_DATA_API_KEY
+   - Atenção: a API-Football (api-football.com) NÃO serve — o plano free
+     dela só dá acesso a dados históricos de 2022-2024, sem a época atual
 
 2) ODDS_API_KEY (cotações das casas de apostas)
    - Acesse https://the-odds-api.com/
@@ -64,8 +66,7 @@ CONFIGURAÇÃO DO AMBIENTE
 
 2) Crie um arquivo ".env" na raiz do projeto com o seguinte conteúdo:
 
-       FOOTBALL_API_KEY=sua_chave_aqui
-       FOOTBALL_API_HOST=v3.football.api-sports.io
+       FOOTBALL_DATA_API_KEY=sua_chave_aqui
        ODDS_API_KEY=sua_chave_aqui
        EMAIL_REMETENTE=seu_email@gmail.com
        EMAIL_APP_PASSWORD=sua_senha_de_app_de_16_caracteres
@@ -131,7 +132,7 @@ Opção recomendada para iniciantes: DigitalOcean, Render ou uma VPS AWS Lightsa
 - Configure o comando de build: pip install -r requirements.txt
 - Configure o comando de execução: python main.py
 - Configure a expressão cron (ex.: "0 8 * * *") e as variáveis de ambiente
-  (FOOTBALL_API_KEY, ODDS_API_KEY, EMAIL_REMETENTE, EMAIL_APP_PASSWORD,
+  (FOOTBALL_DATA_API_KEY, ODDS_API_KEY, EMAIL_REMETENTE, EMAIL_APP_PASSWORD,
   EMAIL_DESTINATARIO) no painel.
 
 

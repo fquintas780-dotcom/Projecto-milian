@@ -8,7 +8,7 @@ Todas as chaves sensíveis (API Keys, Tokens) devem vir de VARIÁVEIS DE AMBIENT
 e NUNCA devem ser escritas diretamente no código-fonte, especialmente em produção.
 
 Como definir as variáveis de ambiente no Linux/VPS (bash):
-    export FOOTBALL_API_KEY="sua_chave_aqui"
+    export FOOTBALL_DATA_API_KEY="sua_chave_aqui"
     export ODDS_API_KEY="sua_chave_aqui"
     export EMAIL_REMETENTE="seu_email@gmail.com"
     export EMAIL_APP_PASSWORD="sua_senha_de_app_de_16_caracteres"
@@ -27,9 +27,8 @@ load_dotenv()
 # ----------------------------------------------------------------------
 # CREDENCIAIS DE API (obrigatórias — o bot valida a presença delas no boot)
 # ----------------------------------------------------------------------
-FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY", "")
-FOOTBALL_API_HOST = os.getenv("FOOTBALL_API_HOST", "v3.football.api-sports.io")
-FOOTBALL_API_BASE_URL = f"https://{FOOTBALL_API_HOST}"
+FOOTBALL_DATA_API_KEY = os.getenv("FOOTBALL_DATA_API_KEY", "")
+FOOTBALL_DATA_BASE_URL = "https://api.football-data.org/v4"
 
 ODDS_API_KEY = os.getenv("ODDS_API_KEY", "")
 ODDS_API_BASE_URL = "https://api.the-odds-api.com/v4"
@@ -50,14 +49,15 @@ VALUE_MINIMO = 0.05              # edge mínimo (5%) para considerar "value bet"
 ODD_MINIMA_ACEITAVEL = 1.30      # filtra odds "lixo" abaixo desse valor
 ODD_MAXIMA_ACEITAVEL = 4.50      # evita long-shots com alta variância
 
-# Ligas monitoradas (IDs da API-Football — ajuste conforme seu plano de API)
+# Ligas monitoradas (códigos da football-data.org — todas incluídas no plano
+# gratuito, com acesso à época atual)
 LIGAS_MONITORADAS = {
-    "Premier League": 39,
-    "La Liga": 140,
-    "Serie A": 135,
-    "Bundesliga": 78,
-    "Ligue 1": 61,
-    "Brasileirão": 71,
+    "Premier League": "PL",
+    "La Liga": "PD",
+    "Serie A": "SA",
+    "Bundesliga": "BL1",
+    "Ligue 1": "FL1",
+    "Brasileirão": "BSA",
 }
 
 # Número de partidas históricas usadas para calcular médias de gols (Poisson)
@@ -82,8 +82,8 @@ def validar_credenciais() -> list:
     Retorna uma lista de nomes de variáveis faltantes (lista vazia = tudo OK).
     """
     faltando = []
-    if not FOOTBALL_API_KEY:
-        faltando.append("FOOTBALL_API_KEY")
+    if not FOOTBALL_DATA_API_KEY:
+        faltando.append("FOOTBALL_DATA_API_KEY")
     if not ODDS_API_KEY:
         faltando.append("ODDS_API_KEY")
     if not EMAIL_REMETENTE:
