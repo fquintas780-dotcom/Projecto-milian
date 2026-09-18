@@ -40,20 +40,24 @@ COMO OBTER AS CREDENCIAIS (API KEYS)
    - Crie uma conta gratuita (plano free tem cota mensal de requisições)
    - No painel, copie sua "API Key"
 
-3) WHATSAPP_PHONE e WHATSAPP_APIKEY (envio do relatório via CallMeBot)
-   a) Adicione o número +34 623 76 13 63 aos seus contatos do WhatsApp
-      (ou abra https://wa.me/34623761363 pelo telemóvel que vai receber
-      as mensagens automáticas — este número do CallMeBot pode mudar de
-      vez em quando; confirme sempre em callmebot.com/blog/free-api-whatsapp-messages/
-      se a ativação falhar)
-   b) Envie, pelo WhatsApp desse mesmo telemóvel, a mensagem exata:
-        I allow callmebot to send me messages
-   c) Aguarde alguns minutos até receber a resposta do CallMeBot com o
-      seu APIKEY (ex.: "Your APIKEY is 123456")
-      → esse número é o seu WHATSAPP_APIKEY
-   d) O seu WHATSAPP_PHONE é o número que recebeu o APIKEY, com o código
-      do país e sem espaços/símbolos (ex.: "244923000000" para Angola)
-   e) Documentação oficial: https://www.callmebot.com/blog/free-api-whatsapp-messages/
+3) TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN e TWILIO_WHATSAPP_TO
+   (envio do relatório via Twilio WhatsApp Sandbox)
+   a) Crie uma conta gratuita em https://www.twilio.com/try-twilio
+   b) No Twilio Console (painel principal), copie o "Account SID" e o
+      "Auth Token" → são o seu TWILIO_ACCOUNT_SID e TWILIO_AUTH_TOKEN
+   c) Vá a Messaging > Try it out > Send a WhatsApp message (ou aceda
+      diretamente a https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn)
+      para ativar o Sandbox — a página mostra um número (ex.: +1 415 523 8886)
+      e um código do tipo "join palavra-chave"
+   d) Do seu telemóvel, envie por WhatsApp esse código (ex.: "join
+      algum-codigo") para o número do Sandbox indicado
+   e) Depois de receber a confirmação, o seu TWILIO_WHATSAPP_TO é o seu
+      próprio número com código do país (ex.: "+244923000000"), e o
+      TWILIO_WHATSAPP_FROM é o número do Sandbox (o padrão
+      "+14155238886" já vem configurado)
+   f) Atenção: o Sandbox expira a ligação após 72h de inatividade — se o
+      bot parar de enviar mensagens, basta reenviar o "join ..." outra vez
+   g) Documentação oficial: https://www.twilio.com/docs/whatsapp/sandbox
 
 
 ================================================================================
@@ -68,8 +72,10 @@ CONFIGURAÇÃO DO AMBIENTE
        FOOTBALL_API_KEY=sua_chave_aqui
        FOOTBALL_API_HOST=v3.football.api-sports.io
        ODDS_API_KEY=sua_chave_aqui
-       WHATSAPP_PHONE=seu_numero_com_codigo_do_pais
-       WHATSAPP_APIKEY=sua_apikey_do_callmebot
+       TWILIO_ACCOUNT_SID=seu_account_sid
+       TWILIO_AUTH_TOKEN=seu_auth_token
+       TWILIO_WHATSAPP_FROM=+14155238886
+       TWILIO_WHATSAPP_TO=seu_numero_com_codigo_do_pais
        BANCA_INICIAL=2000
 
 3) Teste localmente:
@@ -131,7 +137,8 @@ Opção recomendada para iniciantes: DigitalOcean, Render ou uma VPS AWS Lightsa
 - Configure o comando de build: pip install -r requirements.txt
 - Configure o comando de execução: python main.py
 - Configure a expressão cron (ex.: "0 8 * * *") e as variáveis de ambiente
-  (FOOTBALL_API_KEY, ODDS_API_KEY, WHATSAPP_PHONE, WHATSAPP_APIKEY) no painel.
+  (FOOTBALL_API_KEY, ODDS_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
+  TWILIO_WHATSAPP_FROM, TWILIO_WHATSAPP_TO) no painel.
 
 
 ================================================================================

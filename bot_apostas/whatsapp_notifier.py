@@ -2,59 +2,61 @@
 """
 whatsapp_notifier.py
 =====================
-Envio de mensagens formatadas para WhatsApp via CallMeBot
-(https://www.callmebot.com/blog/free-api-whatsapp-messages/).
+Envio de mensagens formatadas para WhatsApp via Twilio (WhatsApp Sandbox
+ou número de produção) — https://www.twilio.com/docs/whatsapp/sandbox.
 
-Como ativar o CallMeBot (gratuito, sem conta business) — ver docstring
-principal em main.py para o passo a passo completo.
+Como ativar o Twilio Sandbox — ver docstring principal em main.py para o
+passo a passo completo.
 """
 
 import time
 import logging
 import requests
+from requests.auth import HTTPBasicAuth
 
 import config
 
 logger = logging.getLogger("bot_apostas.whatsapp_notifier")
 
-CALLMEBOT_BASE_URL = "https://api.callmebot.com/whatsapp.php"
-
 
 def enviar_mensagem(texto: str) -> bool:
     """
-    Envia uma mensagem de texto para o número configurado via CallMeBot.
+    Envia uma mensagem de texto para o número configurado via Twilio.
     Retorna True em caso de sucesso, False em caso de falha (não lança exceção
     para não interromper o fluxo principal do bot por uma falha de notificação).
     """
-    if not config.WHATSAPP_PHONE or not config.WHATSAPP_APIKEY:
-        logger.warning("WhatsApp não configurado — pulando envio da notificação.")
+    if not (config.TWILIO_ACCOUNT_SID and config.TWILIO_AUTH_TOKEN
+            and config.TWILIO_WHATSAPP_FROM and config.TWILIO_WHATSAPP_TO):
+        logger.warning("WhatsApp (Twilio) não configurado — pulando envio da notificação.")
         return False
 
-    params = {
-        "phone": config.WHATSAPP_PHONE,
-        "text": texto,
-        "apikey": config.WHATSAPP_APIKEY,
+    url = f"https://api.twilio.com/2010-04-01/Accounts/{config.TWILIO_ACCOUNT_SID}/Messages.json"
+    dados = {
+        "From": f"whatsapp:{config.TWILIO_WHATSAPP_FROM}",
+        "To": f"whatsapp:{config.TWILIO_WHATSAPP_TO}",
+        "Body": texto,
     }
 
     for tentativa in range(1, config.HTTP_MAX_TENTATIVAS + 1):
         try:
-            resp = requests.get(
-                CALLMEBOT_BASE_URL,
-                params=params,
+            resp = requests.post(
+                url,
+                data=dados,
+                auth=HTTPBasicAuth(config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN),
                 timeout=config.HTTP_TIMEOUT_SEGUNDOS,
             )
             resp.raise_for_status()
-            logger.info("Mensagem enviada ao WhatsApp com sucesso.")
+            logger.info("Mensagem enviada ao WhatsApp (Twilio) com sucesso.")
             return True
         except requests.exceptions.RequestException as exc:
             logger.warning(
-                "Tentativa %s/%s de envio ao WhatsApp falhou: %s",
+                "Tentativa %s/%s de envio ao WhatsApp (Twilio) falhou: %s",
                 tentativa, config.HTTP_MAX_TENTATIVAS, exc
             )
             if tentativa < config.HTTP_MAX_TENTATIVAS:
                 time.sleep(config.HTTP_BACKOFF_SEGUNDOS * tentativa)
 
-    logger.error("Falha definitiva ao enviar mensagem ao WhatsApp.")
+    logger.error("Falha definitiva ao enviar mensagem ao WhatsApp (Twilio).")
     return False
 
 
