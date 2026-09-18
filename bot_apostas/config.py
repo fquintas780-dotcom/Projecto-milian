@@ -39,6 +39,9 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "+14155238886")
 TWILIO_WHATSAPP_TO = os.getenv("TWILIO_WHATSAPP_TO", "")
+# Content SID de um template Twilio (obrigatório em contas novas — ver
+# main.py para instruções de como criar um Content Template no Console).
+TWILIO_CONTENT_SID = os.getenv("TWILIO_CONTENT_SID", "")
 
 # ----------------------------------------------------------------------
 # PARÂMETROS DE NEGÓCIO (gestão de banca e critérios de seleção)

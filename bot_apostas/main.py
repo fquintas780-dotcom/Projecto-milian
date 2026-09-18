@@ -59,6 +59,24 @@ COMO OBTER AS CREDENCIAIS (API KEYS)
       bot parar de enviar mensagens, basta reenviar o "join ..." outra vez
    g) Documentação oficial: https://www.twilio.com/docs/whatsapp/sandbox
 
+4) TWILIO_CONTENT_SID (obrigatório em contas Twilio novas)
+   Contas Twilio criadas recentemente são obrigadas pela política do
+   WhatsApp/Meta a usar um "Content Template" em vez de texto livre —
+   sem isto o envio falha com o erro 21654 "ContentSid Required".
+   a) No Twilio Console, use a busca "Jump to..." e procure por
+      "Content Template Builder" (ou aceda a
+      https://console.twilio.com/us1/develop/sms/content-template-builder)
+   b) Clique em "Create new" → escolha o tipo "Text" (twilio/text)
+   c) Preencha: Friendly Name (ex.: "bot_apostas_relatorio"), Language
+      (Portuguese, ou English se não disponível), Category "Utility"
+   d) No corpo da mensagem ("Body"), escreva apenas: {{1}}
+      (uma única variável — o bot preenche-a com o texto completo do
+      relatório em cada envio)
+   e) Guarde/submeta o template. Contas de teste/Sandbox costumam ser
+      aprovadas automaticamente; se ficar "Pending", aguarde a aprovação
+   f) Copie o "Content SID" gerado (começa por "HX...") → é o seu
+      TWILIO_CONTENT_SID
+
 
 ================================================================================
 CONFIGURAÇÃO DO AMBIENTE
@@ -76,6 +94,7 @@ CONFIGURAÇÃO DO AMBIENTE
        TWILIO_AUTH_TOKEN=seu_auth_token
        TWILIO_WHATSAPP_FROM=+14155238886
        TWILIO_WHATSAPP_TO=seu_numero_com_codigo_do_pais
+       TWILIO_CONTENT_SID=seu_content_sid
        BANCA_INICIAL=2000
 
 3) Teste localmente:
@@ -138,7 +157,7 @@ Opção recomendada para iniciantes: DigitalOcean, Render ou uma VPS AWS Lightsa
 - Configure o comando de execução: python main.py
 - Configure a expressão cron (ex.: "0 8 * * *") e as variáveis de ambiente
   (FOOTBALL_API_KEY, ODDS_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
-  TWILIO_WHATSAPP_FROM, TWILIO_WHATSAPP_TO) no painel.
+  TWILIO_WHATSAPP_FROM, TWILIO_WHATSAPP_TO, TWILIO_CONTENT_SID) no painel.
 
 
 ================================================================================

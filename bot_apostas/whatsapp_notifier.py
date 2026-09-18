@@ -10,6 +10,7 @@ passo a passo completo.
 """
 
 import time
+import json
 import logging
 import requests
 from requests.auth import HTTPBasicAuth
@@ -24,6 +25,11 @@ def enviar_mensagem(texto: str) -> bool:
     Envia uma mensagem de texto para o número configurado via Twilio.
     Retorna True em caso de sucesso, False em caso de falha (não lança exceção
     para não interromper o fluxo principal do bot por uma falha de notificação).
+
+    Se TWILIO_CONTENT_SID estiver definido, envia via Content API (Template),
+    exigido pela política atual do WhatsApp/Twilio para contas novas — o
+    texto completo vai na variável {{1}} do template. Caso contrário, tenta
+    enviar como texto livre (Body), que só funciona em contas mais antigas.
     """
     if not (config.TWILIO_ACCOUNT_SID and config.TWILIO_AUTH_TOKEN
             and config.TWILIO_WHATSAPP_FROM and config.TWILIO_WHATSAPP_TO):
@@ -34,8 +40,12 @@ def enviar_mensagem(texto: str) -> bool:
     dados = {
         "From": f"whatsapp:{config.TWILIO_WHATSAPP_FROM}",
         "To": f"whatsapp:{config.TWILIO_WHATSAPP_TO}",
-        "Body": texto,
     }
+    if config.TWILIO_CONTENT_SID:
+        dados["ContentSid"] = config.TWILIO_CONTENT_SID
+        dados["ContentVariables"] = json.dumps({"1": texto})
+    else:
+        dados["Body"] = texto
 
     for tentativa in range(1, config.HTTP_MAX_TENTATIVAS + 1):
         try:
