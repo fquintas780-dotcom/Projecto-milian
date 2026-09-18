@@ -16,7 +16,7 @@ Este script executa, em uma única rodada, todo o pipeline diário do bot:
     5. Seleciona os 2 melhores jogos do dia
     6. Monta o bilhete (aposta dupla) e calcula stake/retorno (bankroll.py)
     7. Persiste tudo no SQLite (database.py)
-    8. Envia o relatório formatado para o Telegram (telegram_notifier.py)
+    8. Envia o relatório formatado por email (email_notifier.py)
 
 O script é desenhado para ser executado UMA VEZ por chamada (ex.: via cron
 job diário) — ele não roda em loop infinito. Isso o torna simples, previsível
@@ -40,17 +40,19 @@ COMO OBTER AS CREDENCIAIS (API KEYS)
    - Crie uma conta gratuita (plano free tem cota mensal de requisições)
    - No painel, copie sua "API Key"
 
-3) TELEGRAM_TOKEN e TELEGRAM_CHAT_ID (envio do relatório)
-   a) Abra o Telegram e procure por "@BotFather"
-   b) Envie o comando /newbot e siga as instruções (nome + username do bot)
-   c) O BotFather retornará um TOKEN no formato "123456789:ABC-DEF..."
-      → esse é o seu TELEGRAM_TOKEN
-   d) Para obter o CHAT_ID:
-      - Envie qualquer mensagem para o seu bot recém-criado
-      - Acesse no navegador:
-        https://api.telegram.org/bot<SEU_TOKEN>/getUpdates
-      - Procure o campo "chat":{"id": ...} na resposta JSON — esse número
-        (pode ser negativo, se for um grupo) é o seu TELEGRAM_CHAT_ID
+3) EMAIL_REMETENTE, EMAIL_APP_PASSWORD e EMAIL_DESTINATARIO
+   (envio do relatório via SMTP do Gmail — grátis, sem aprovações)
+   a) Use uma conta Gmail existente (ou crie uma nova, grátis)
+   b) Ative a verificação em duas etapas em myaccount.google.com/security
+      (obrigatório para gerar senhas de app)
+   c) Aceda a myaccount.google.com/apppasswords, crie uma nova senha de
+      app (ex.: nome "bot_apostas") — copie a senha de 16 caracteres
+      gerada (sem espaços) → é o seu EMAIL_APP_PASSWORD
+   d) EMAIL_REMETENTE é o endereço dessa conta Gmail (ex.:
+      "seu_email@gmail.com")
+   e) EMAIL_DESTINATARIO é o email que vai receber o relatório (pode ser
+      o mesmo endereço do remetente, ou outro)
+   f) Documentação oficial: https://support.google.com/mail/answer/185833
 
 
 ================================================================================
@@ -65,8 +67,9 @@ CONFIGURAÇÃO DO AMBIENTE
        FOOTBALL_API_KEY=sua_chave_aqui
        FOOTBALL_API_HOST=v3.football.api-sports.io
        ODDS_API_KEY=sua_chave_aqui
-       TELEGRAM_TOKEN=seu_token_aqui
-       TELEGRAM_CHAT_ID=seu_chat_id_aqui
+       EMAIL_REMETENTE=seu_email@gmail.com
+       EMAIL_APP_PASSWORD=sua_senha_de_app_de_16_caracteres
+       EMAIL_DESTINATARIO=seu_email@gmail.com
        BANCA_INICIAL=2000
 
 3) Teste localmente:
@@ -128,7 +131,8 @@ Opção recomendada para iniciantes: DigitalOcean, Render ou uma VPS AWS Lightsa
 - Configure o comando de build: pip install -r requirements.txt
 - Configure o comando de execução: python main.py
 - Configure a expressão cron (ex.: "0 8 * * *") e as variáveis de ambiente
-  (FOOTBALL_API_KEY, ODDS_API_KEY, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID) no painel.
+  (FOOTBALL_API_KEY, ODDS_API_KEY, EMAIL_REMETENTE, EMAIL_APP_PASSWORD,
+  EMAIL_DESTINATARIO) no painel.
 
 
 ================================================================================
@@ -151,7 +155,7 @@ import odds_api
 import poisson_model
 import value_betting
 import bankroll
-import telegram_notifier
+import email_notifier
 
 logging.basicConfig(
     level=logging.INFO,
@@ -185,7 +189,7 @@ def executar_pipeline_diario():
     if not jogos_do_dia:
         msg = "Nenhum jogo encontrado nas ligas monitoradas para hoje."
         logger.warning(msg)
-        telegram_notifier.enviar_mensagem(telegram_notifier.formatar_mensagem_erro(msg))
+        email_notifier.enviar_mensagem(email_notifier.formatar_mensagem_erro(msg))
         return
 
     # 2. Busca de odds por liga (cacheado por liga para reduzir chamadas)
@@ -236,7 +240,7 @@ def executar_pipeline_diario():
     if not todas_oportunidades:
         msg = "Nenhuma oportunidade de value betting encontrada hoje (todas abaixo do mínimo exigido)."
         logger.warning(msg)
-        telegram_notifier.enviar_mensagem(telegram_notifier.formatar_mensagem_erro(msg))
+        email_notifier.enviar_mensagem(email_notifier.formatar_mensagem_erro(msg))
         return
 
     # 5. Seleção dos melhores jogos do dia
@@ -248,7 +252,7 @@ def executar_pipeline_diario():
             f"(necessário: {config.NUMERO_JOGOS_SELECIONADOS}). Bilhete não gerado por segurança."
         )
         logger.warning(msg)
-        telegram_notifier.enviar_mensagem(telegram_notifier.formatar_mensagem_erro(msg))
+        email_notifier.enviar_mensagem(email_notifier.formatar_mensagem_erro(msg))
         return
 
     # 6. Montagem do bilhete com gestão de banca
@@ -265,8 +269,8 @@ def executar_pipeline_diario():
     )
 
     # 8. Notificação via Telegram
-    relatorio = telegram_notifier.formatar_relatorio_diario(bilhete, saldo_atual)
-    telegram_notifier.enviar_mensagem(relatorio)
+    relatorio = email_notifier.formatar_relatorio_diario(bilhete, saldo_atual)
+    email_notifier.enviar_mensagem(relatorio)
 
     logger.info("Bilhete #%s gerado e notificado com sucesso.", bilhete_id)
     logger.info("========== EXECUÇÃO FINALIZADA ==========")
@@ -279,7 +283,7 @@ if __name__ == "__main__":
         logger.exception("Falha crítica não tratada no pipeline: %s", exc)
         # Tenta notificar o erro crítico via Telegram, se possível
         try:
-            telegram_notifier.enviar_mensagem(
+            email_notifier.enviar_mensagem(
                 f"🔴 *ERRO CRÍTICO NO BOT*\n\n`{str(exc)}`\n\nVerifique os logs da VPS."
             )
         except Exception:

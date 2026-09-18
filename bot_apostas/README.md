@@ -16,8 +16,9 @@
    ```
 
 2. Preencha o `.env` com as suas credenciais reais (FOOTBALL_API_KEY,
-   ODDS_API_KEY, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID). Veja no docstring de
-   `main.py` o passo a passo de como obter cada uma.
+   ODDS_API_KEY, EMAIL_REMETENTE, EMAIL_APP_PASSWORD, EMAIL_DESTINATARIO).
+   Veja no docstring de `main.py` o passo a passo de como obter cada uma
+   (o email usa uma "senha de app" do Gmail, grátis).
 
 3. (Opcional) Valide a lógica de negócio sem precisar de credenciais nem
    rede, usando dados fictícios:
@@ -43,7 +44,7 @@
 | `poisson_model.py` | Motor estatístico (Distribuição de Poisson) |
 | `value_betting.py` | Filtro de value bets e seleção dos melhores jogos |
 | `bankroll.py` | Cálculo de stake, odd total e retorno |
-| `telegram_notifier.py` | Envio do relatório diário via Telegram |
+| `email_notifier.py` | Envio do relatório diário por email (SMTP Gmail) |
 | `main.py` | Orquestrador do pipeline + instruções completas de deploy em VPS |
 | `setup.sh` | Cria o venv, instala dependências e o `.env` inicial |
 | `smoke_test.py` | Testa a lógica de negócio (Poisson/value/bankroll) com dados fictícios |
