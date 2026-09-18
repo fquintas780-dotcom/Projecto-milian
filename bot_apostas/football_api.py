@@ -78,6 +78,14 @@ def buscar_jogos_do_dia(data_iso: str) -> list:
             logger.error("Ignorando liga '%s' por falha de API: %s", nome_liga, exc)
             continue
 
+        erros = dados.get("errors")
+        if erros:
+            logger.error(
+                "API-Football devolveu erro para a liga '%s' (season=%s): %s",
+                nome_liga, _temporada_atual(), erros
+            )
+            continue
+
         for item in dados.get("response", []):
             try:
                 jogos_encontrados.append({
@@ -114,6 +122,13 @@ def buscar_medias_gols(time_id: int, liga_id: int, temporada: int = None) -> dic
         "season": temporada,
         "last": config.JANELA_JOGOS_HISTORICO,
     })
+
+    erros = dados.get("errors")
+    if erros:
+        logger.error(
+            "API-Football devolveu erro para o time %s (season=%s): %s",
+            time_id, temporada, erros
+        )
 
     jogos = dados.get("response", [])
     if not jogos:
