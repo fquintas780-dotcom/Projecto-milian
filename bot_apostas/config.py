@@ -10,10 +10,8 @@ e NUNCA devem ser escritas diretamente no código-fonte, especialmente em produ�
 Como definir as variáveis de ambiente no Linux/VPS (bash):
     export FOOTBALL_API_KEY="sua_chave_aqui"
     export ODDS_API_KEY="sua_chave_aqui"
-    export TWILIO_ACCOUNT_SID="seu_account_sid"
-    export TWILIO_AUTH_TOKEN="seu_auth_token"
-    export TWILIO_WHATSAPP_FROM="+14155238886"
-    export TWILIO_WHATSAPP_TO="+244923000000"
+    export TELEGRAM_TOKEN="seu_token_aqui"
+    export TELEGRAM_CHAT_ID="seu_chat_id_aqui"
 
 Ou, de forma persistente, crie um arquivo .env (usando python-dotenv) e
 carregue-o no início da execução (já implementado abaixo).
@@ -35,13 +33,9 @@ FOOTBALL_API_BASE_URL = f"https://{FOOTBALL_API_HOST}"
 ODDS_API_KEY = os.getenv("ODDS_API_KEY", "")
 ODDS_API_BASE_URL = "https://api.the-odds-api.com/v4"
 
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
-TWILIO_WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "+14155238886")
-TWILIO_WHATSAPP_TO = os.getenv("TWILIO_WHATSAPP_TO", "")
-# Content SID de um template Twilio (obrigatório em contas novas — ver
-# main.py para instruções de como criar um Content Template no Console).
-TWILIO_CONTENT_SID = os.getenv("TWILIO_CONTENT_SID", "")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+TELEGRAM_API_BASE_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 # ----------------------------------------------------------------------
 # PARÂMETROS DE NEGÓCIO (gestão de banca e critérios de seleção)
@@ -89,10 +83,8 @@ def validar_credenciais() -> list:
         faltando.append("FOOTBALL_API_KEY")
     if not ODDS_API_KEY:
         faltando.append("ODDS_API_KEY")
-    if not TWILIO_ACCOUNT_SID:
-        faltando.append("TWILIO_ACCOUNT_SID")
-    if not TWILIO_AUTH_TOKEN:
-        faltando.append("TWILIO_AUTH_TOKEN")
-    if not TWILIO_WHATSAPP_TO:
-        faltando.append("TWILIO_WHATSAPP_TO")
+    if not TELEGRAM_TOKEN:
+        faltando.append("TELEGRAM_TOKEN")
+    if not TELEGRAM_CHAT_ID:
+        faltando.append("TELEGRAM_CHAT_ID")
     return faltando

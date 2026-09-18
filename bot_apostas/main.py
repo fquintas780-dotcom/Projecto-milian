@@ -16,7 +16,7 @@ Este script executa, em uma única rodada, todo o pipeline diário do bot:
     5. Seleciona os 2 melhores jogos do dia
     6. Monta o bilhete (aposta dupla) e calcula stake/retorno (bankroll.py)
     7. Persiste tudo no SQLite (database.py)
-    8. Envia o relatório formatado para o WhatsApp (whatsapp_notifier.py)
+    8. Envia o relatório formatado para o Telegram (telegram_notifier.py)
 
 O script é desenhado para ser executado UMA VEZ por chamada (ex.: via cron
 job diário) — ele não roda em loop infinito. Isso o torna simples, previsível
@@ -40,48 +40,17 @@ COMO OBTER AS CREDENCIAIS (API KEYS)
    - Crie uma conta gratuita (plano free tem cota mensal de requisições)
    - No painel, copie sua "API Key"
 
-3) TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN e TWILIO_WHATSAPP_TO
-   (envio do relatório via Twilio WhatsApp Sandbox)
-   a) Crie uma conta gratuita em https://www.twilio.com/try-twilio
-   b) No Twilio Console (painel principal), copie o "Account SID" e o
-      "Auth Token" → são o seu TWILIO_ACCOUNT_SID e TWILIO_AUTH_TOKEN
-   c) Vá a Messaging > Try it out > Send a WhatsApp message (ou aceda
-      diretamente a https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn)
-      para ativar o Sandbox — a página mostra um número (ex.: +1 415 523 8886)
-      e um código do tipo "join palavra-chave"
-   d) Do seu telemóvel, envie por WhatsApp esse código (ex.: "join
-      algum-codigo") para o número do Sandbox indicado
-   e) Depois de receber a confirmação, o seu TWILIO_WHATSAPP_TO é o seu
-      próprio número com código do país (ex.: "+244923000000"), e o
-      TWILIO_WHATSAPP_FROM é o número do Sandbox (o padrão
-      "+14155238886" já vem configurado)
-   f) Atenção: o Sandbox expira a ligação após 72h de inatividade — se o
-      bot parar de enviar mensagens, basta reenviar o "join ..." outra vez
-   g) Documentação oficial: https://www.twilio.com/docs/whatsapp/sandbox
-
-4) TWILIO_CONTENT_SID (obrigatório em contas Twilio novas)
-   Contas Twilio criadas recentemente são obrigadas pela política do
-   WhatsApp/Meta a usar um "Content Template" em vez de texto livre —
-   sem isto o envio falha com o erro 21654 "ContentSid Required".
-
-   Contas Trial (grátis) NÃO conseguem registar um WhatsApp Sender nem
-   submeter um template próprio para aprovação (erro: "Please upgrade
-   your account to submit a WhatsApp Sender") — nesse caso, use um dos
-   templates pré-aprovados que o próprio Twilio disponibiliza no Sandbox:
-
-   a) Aceda a https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn
-   b) Vá à etapa "Business-Initiated message"
-   c) No dropdown "Content Template Type", escolha **"Verification Codes"**
-      (texto fixo mínimo: "{{1}} is your verification code. For your
-      security, do not share this code." — a variável {{1}} recebe o
-      relatório completo; a frase fixa fica no fim, um pouco estranha,
-      mas funcional enquanto a conta for Trial)
-   d) No painel de código à direita (separador "curl"), copie o valor de
-      "ContentSid=HX..." da URL — é o seu TWILIO_CONTENT_SID
-
-   Se mais tarde fizer upgrade da conta Twilio (paga), pode em vez disso
-   criar um template próprio sem a frase fixa — ver documentação em
-   https://console.twilio.com/us1/develop/sms/content-template-builder
+3) TELEGRAM_TOKEN e TELEGRAM_CHAT_ID (envio do relatório)
+   a) Abra o Telegram e procure por "@BotFather"
+   b) Envie o comando /newbot e siga as instruções (nome + username do bot)
+   c) O BotFather retornará um TOKEN no formato "123456789:ABC-DEF..."
+      → esse é o seu TELEGRAM_TOKEN
+   d) Para obter o CHAT_ID:
+      - Envie qualquer mensagem para o seu bot recém-criado
+      - Acesse no navegador:
+        https://api.telegram.org/bot<SEU_TOKEN>/getUpdates
+      - Procure o campo "chat":{"id": ...} na resposta JSON — esse número
+        (pode ser negativo, se for um grupo) é o seu TELEGRAM_CHAT_ID
 
 
 ================================================================================
@@ -96,11 +65,8 @@ CONFIGURAÇÃO DO AMBIENTE
        FOOTBALL_API_KEY=sua_chave_aqui
        FOOTBALL_API_HOST=v3.football.api-sports.io
        ODDS_API_KEY=sua_chave_aqui
-       TWILIO_ACCOUNT_SID=seu_account_sid
-       TWILIO_AUTH_TOKEN=seu_auth_token
-       TWILIO_WHATSAPP_FROM=+14155238886
-       TWILIO_WHATSAPP_TO=seu_numero_com_codigo_do_pais
-       TWILIO_CONTENT_SID=seu_content_sid
+       TELEGRAM_TOKEN=seu_token_aqui
+       TELEGRAM_CHAT_ID=seu_chat_id_aqui
        BANCA_INICIAL=2000
 
 3) Teste localmente:
@@ -162,8 +128,7 @@ Opção recomendada para iniciantes: DigitalOcean, Render ou uma VPS AWS Lightsa
 - Configure o comando de build: pip install -r requirements.txt
 - Configure o comando de execução: python main.py
 - Configure a expressão cron (ex.: "0 8 * * *") e as variáveis de ambiente
-  (FOOTBALL_API_KEY, ODDS_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
-  TWILIO_WHATSAPP_FROM, TWILIO_WHATSAPP_TO, TWILIO_CONTENT_SID) no painel.
+  (FOOTBALL_API_KEY, ODDS_API_KEY, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID) no painel.
 
 
 ================================================================================
@@ -186,7 +151,7 @@ import odds_api
 import poisson_model
 import value_betting
 import bankroll
-import whatsapp_notifier
+import telegram_notifier
 
 logging.basicConfig(
     level=logging.INFO,
@@ -220,7 +185,7 @@ def executar_pipeline_diario():
     if not jogos_do_dia:
         msg = "Nenhum jogo encontrado nas ligas monitoradas para hoje."
         logger.warning(msg)
-        whatsapp_notifier.enviar_mensagem(whatsapp_notifier.formatar_mensagem_erro(msg))
+        telegram_notifier.enviar_mensagem(telegram_notifier.formatar_mensagem_erro(msg))
         return
 
     # 2. Busca de odds por liga (cacheado por liga para reduzir chamadas)
@@ -271,7 +236,7 @@ def executar_pipeline_diario():
     if not todas_oportunidades:
         msg = "Nenhuma oportunidade de value betting encontrada hoje (todas abaixo do mínimo exigido)."
         logger.warning(msg)
-        whatsapp_notifier.enviar_mensagem(whatsapp_notifier.formatar_mensagem_erro(msg))
+        telegram_notifier.enviar_mensagem(telegram_notifier.formatar_mensagem_erro(msg))
         return
 
     # 5. Seleção dos melhores jogos do dia
@@ -283,7 +248,7 @@ def executar_pipeline_diario():
             f"(necessário: {config.NUMERO_JOGOS_SELECIONADOS}). Bilhete não gerado por segurança."
         )
         logger.warning(msg)
-        whatsapp_notifier.enviar_mensagem(whatsapp_notifier.formatar_mensagem_erro(msg))
+        telegram_notifier.enviar_mensagem(telegram_notifier.formatar_mensagem_erro(msg))
         return
 
     # 6. Montagem do bilhete com gestão de banca
@@ -300,8 +265,8 @@ def executar_pipeline_diario():
     )
 
     # 8. Notificação via Telegram
-    relatorio = whatsapp_notifier.formatar_relatorio_diario(bilhete, saldo_atual)
-    whatsapp_notifier.enviar_mensagem(relatorio)
+    relatorio = telegram_notifier.formatar_relatorio_diario(bilhete, saldo_atual)
+    telegram_notifier.enviar_mensagem(relatorio)
 
     logger.info("Bilhete #%s gerado e notificado com sucesso.", bilhete_id)
     logger.info("========== EXECUÇÃO FINALIZADA ==========")
@@ -314,7 +279,7 @@ if __name__ == "__main__":
         logger.exception("Falha crítica não tratada no pipeline: %s", exc)
         # Tenta notificar o erro crítico via Telegram, se possível
         try:
-            whatsapp_notifier.enviar_mensagem(
+            telegram_notifier.enviar_mensagem(
                 f"🔴 *ERRO CRÍTICO NO BOT*\n\n`{str(exc)}`\n\nVerifique os logs da VPS."
             )
         except Exception:
