@@ -49,9 +49,12 @@ def enviar_mensagem(texto: str) -> bool:
             logger.info("Mensagem enviada ao WhatsApp (Twilio) com sucesso.")
             return True
         except requests.exceptions.RequestException as exc:
+            detalhe_resposta = ""
+            if exc.response is not None:
+                detalhe_resposta = f" | Resposta do Twilio: {exc.response.text}"
             logger.warning(
-                "Tentativa %s/%s de envio ao WhatsApp (Twilio) falhou: %s",
-                tentativa, config.HTTP_MAX_TENTATIVAS, exc
+                "Tentativa %s/%s de envio ao WhatsApp (Twilio) falhou: %s%s",
+                tentativa, config.HTTP_MAX_TENTATIVAS, exc, detalhe_resposta
             )
             if tentativa < config.HTTP_MAX_TENTATIVAS:
                 time.sleep(config.HTTP_BACKOFF_SEGUNDOS * tentativa)
