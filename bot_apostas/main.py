@@ -41,9 +41,11 @@ COMO OBTER AS CREDENCIAIS (API KEYS)
    - No painel, copie sua "API Key"
 
 3) WHATSAPP_PHONE e WHATSAPP_APIKEY (envio do relatório via CallMeBot)
-   a) Adicione o número +34 684 74 61 47 aos seus contatos do WhatsApp
-      (ou abra https://wa.me/34684746147 pelo telemóvel que vai receber
-      as mensagens automáticas)
+   a) Adicione o número +34 623 76 13 63 aos seus contatos do WhatsApp
+      (ou abra https://wa.me/34623761363 pelo telemóvel que vai receber
+      as mensagens automáticas — este número do CallMeBot pode mudar de
+      vez em quando; confirme sempre em callmebot.com/blog/free-api-whatsapp-messages/
+      se a ativação falhar)
    b) Envie, pelo WhatsApp desse mesmo telemóvel, a mensagem exata:
         I allow callmebot to send me messages
    c) Aguarde alguns minutos até receber a resposta do CallMeBot com o
