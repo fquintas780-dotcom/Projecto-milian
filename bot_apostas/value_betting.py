@@ -89,14 +89,16 @@ def selecionar_melhores_jogos(todas_oportunidades: list, quantidade: int = None)
     Recebe a lista de todas as oportunidades de value encontradas no dia e
     seleciona as N melhores partidas (config.NUMERO_JOGOS_SELECIONADOS),
     combinando dentro de cada uma até config.MAX_PERNAS_POR_JOGO mercados
-    diferentes (1X2, Over/Under 2.5, Ambas Marcam) — nunca duas seleções do
-    mesmo mercado no mesmo jogo (ex: não combina "Casa" com "Fora").
+    diferentes (atualmente 1X2 e Over/Under 2.5 — os únicos com odds reais
+    disponíveis; "Ambas Marcam" fica pronto no código mas sem fonte de odds
+    por agora) — nunca duas seleções do mesmo mercado no mesmo jogo (ex: não
+    combina "Casa" com "Fora").
 
     Combinar vários mercados do mesmo jogo aumenta a odd total, mas as
-    seleções NÃO são estatisticamente independentes entre si (ex: "Mais de
-    2.5 golos" e "Ambas Marcam" tendem a acontecer juntas) — a probabilidade
-    real de acertar tudo costuma ser menor do que a simples multiplicação
-    das odds sugere. Por isso o limite de pernas por jogo é propositalmente
+    seleções NÃO são estatisticamente independentes entre si — a
+    probabilidade real de acertar tudo costuma ser menor do que a simples
+    multiplicação das odds sugere. Por isso o limite de pernas por jogo é
+    propositalmente
     conservador.
     """
     quantidade = quantidade or config.NUMERO_JOGOS_SELECIONADOS
