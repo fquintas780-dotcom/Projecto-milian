@@ -134,16 +134,22 @@ def buscar_jogos_do_dia(data_iso: str) -> list:
 
 def buscar_medias_gols(time_id: int, liga_id: str = None) -> dict:
     """
-    Calcula, a partir das últimas N partidas finalizadas (config.JANELA_JOGOS_HISTORICO,
-    em qualquer competição), a média de gols marcados e sofridos por um time.
+    Calcula, a partir das últimas N partidas finalizadas (config.JANELA_JOGOS_HISTORICO),
+    a média de gols marcados e sofridos por um time. Quando liga_id é fornecido,
+    restringe o histórico a essa competição — evita misturar jogos de taças ou
+    competições europeias, com dinâmicas de golos muito diferentes da liga.
 
     Retorna: {"media_marcados": float, "media_sofridos": float, "jogos_analisados": int}
     """
+    params = {
+        "status": "FINISHED",
+        "limit": config.JANELA_JOGOS_HISTORICO,
+    }
+    if liga_id:
+        params["competitions"] = liga_id
+
     try:
-        dados = _request_com_retry(f"teams/{time_id}/matches", {
-            "status": "FINISHED",
-            "limit": config.JANELA_JOGOS_HISTORICO,
-        })
+        dados = _request_com_retry(f"teams/{time_id}/matches", params)
     except ConnectionError as exc:
         logger.warning(
             "Falha ao buscar histórico do time %s: %s — usando médias neutras.", time_id, exc

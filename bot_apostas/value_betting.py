@@ -57,6 +57,14 @@ def avaliar_mercados_da_partida(jogo: dict, probabilidades: dict, odds: dict) ->
 
         value = calcular_value(prob_modelo, odd)
 
+        if value > config.VALUE_MAXIMO:
+            logger.warning(
+                "Value implausível (%.1f%%) descartado para %s x %s — %s/%s "
+                "(provável ruído nos dados, não oportunidade real).",
+                value * 100, jogo["time_mandante"], jogo["time_visitante"], mercado, selecao
+            )
+            continue
+
         if value >= config.VALUE_MINIMO:
             oportunidades.append({
                 "descricao": f"{jogo['time_mandante']} x {jogo['time_visitante']} ({jogo['liga']})",
