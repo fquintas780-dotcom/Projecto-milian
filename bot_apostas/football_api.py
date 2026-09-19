@@ -71,35 +71,39 @@ def buscar_jogos_do_dia(data_iso: str) -> list:
     os dados essenciais.
     """
     jogos_encontrados = []
-    codigos_ligas = ",".join(config.LIGAS_MONITORADAS.values())
-    codigo_para_nome = {codigo: nome for nome, codigo in config.LIGAS_MONITORADAS.items()}
 
-    try:
-        dados = _request_com_retry("matches", {
-            "dateFrom": data_iso,
-            "dateTo": data_iso,
-            "competitions": codigos_ligas,
-        })
-    except ConnectionError as exc:
-        logger.error("Falha ao buscar jogos do dia: %s", exc)
-        return jogos_encontrados
-
-    for item in dados.get("matches", []):
+    for nome_liga, codigo_liga in config.LIGAS_MONITORADAS.items():
         try:
-            codigo_liga = item["competition"]["code"]
-            jogos_encontrados.append({
-                "fixture_id": item["id"],
-                "liga": codigo_para_nome.get(codigo_liga, codigo_liga),
-                "liga_id": codigo_liga,
-                "data_hora": item["utcDate"],
-                "time_mandante": item["homeTeam"]["name"],
-                "time_mandante_id": item["homeTeam"]["id"],
-                "time_visitante": item["awayTeam"]["name"],
-                "time_visitante_id": item["awayTeam"]["id"],
+            dados = _request_com_retry(f"competitions/{codigo_liga}/matches", {
+                "dateFrom": data_iso,
+                "dateTo": data_iso,
             })
-        except KeyError as exc:
-            logger.warning("Registro de partida incompleto, ignorando: %s", exc)
+        except ConnectionError as exc:
+            logger.error("Ignorando liga '%s' por falha de API: %s", nome_liga, exc)
             continue
+
+        erros = dados.get("errors")
+        if erros:
+            logger.error(
+                "football-data.org devolveu erro para a liga '%s': %s", nome_liga, erros
+            )
+            continue
+
+        for item in dados.get("matches", []):
+            try:
+                jogos_encontrados.append({
+                    "fixture_id": item["id"],
+                    "liga": nome_liga,
+                    "liga_id": codigo_liga,
+                    "data_hora": item["utcDate"],
+                    "time_mandante": item["homeTeam"]["name"],
+                    "time_mandante_id": item["homeTeam"]["id"],
+                    "time_visitante": item["awayTeam"]["name"],
+                    "time_visitante_id": item["awayTeam"]["id"],
+                })
+            except KeyError as exc:
+                logger.warning("Registro de partida incompleto, ignorando: %s", exc)
+                continue
 
     logger.info("Total de %d jogos encontrados para %s.", len(jogos_encontrados), data_iso)
     return jogos_encontrados
