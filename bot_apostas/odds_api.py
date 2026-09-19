@@ -54,9 +54,12 @@ def _request_com_retry(url: str, params: dict) -> list:
 
 def buscar_odds_liga(nome_liga: str) -> list:
     """
-    Busca odds (mercados h2h, totals e btts) para todos os jogos disponíveis
-    de uma liga. Retorna a lista bruta de eventos conforme devolvida pela
-    The Odds API.
+    Busca odds (mercados h2h e totals) para todos os jogos disponíveis de uma
+    liga. Retorna a lista bruta de eventos conforme devolvida pela The Odds API.
+
+    Nota: o mercado "btts" foi tentado, mas a API devolve 422 Unprocessable
+    Entity para TODA a requisição com esta chave (provavelmente mercado extra
+    exige plano pago) — por isso fica de fora por agora, sem quebrar h2h/totals.
     """
     sport_key = SPORT_KEYS.get(nome_liga)
     if not sport_key:
@@ -67,7 +70,7 @@ def buscar_odds_liga(nome_liga: str) -> list:
     params = {
         "apiKey": config.ODDS_API_KEY,
         "regions": "eu,uk",
-        "markets": "h2h,totals,btts",
+        "markets": "h2h,totals",
         "oddsFormat": "decimal",
     }
 
