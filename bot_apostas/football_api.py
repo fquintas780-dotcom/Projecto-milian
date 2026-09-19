@@ -27,6 +27,11 @@ import config
 
 logger = logging.getLogger("bot_apostas.football_api")
 
+# O plano free da football-data.org permite 10 pedidos/minuto — usamos uma
+# margem de segurança (9/min) para não ficarmos à beira do limite.
+_INTERVALO_MINIMO_SEGUNDOS = 6.5
+_ultima_requisicao = 0.0
+
 
 def _headers():
     return {
@@ -34,14 +39,27 @@ def _headers():
     }
 
 
+def _respeitar_limite_de_taxa():
+    """Garante um intervalo mínimo entre pedidos para não exceder o rate limit."""
+    global _ultima_requisicao
+    agora = time.monotonic()
+    espera = _INTERVALO_MINIMO_SEGUNDOS - (agora - _ultima_requisicao)
+    if espera > 0:
+        time.sleep(espera)
+    _ultima_requisicao = time.monotonic()
+
+
 def _request_com_retry(endpoint: str, params: dict) -> dict:
     """
     Executa uma requisição GET com retries. Lança exceção se todas falharem.
+    Em caso de 429 (rate limit), respeita o cabeçalho "Retry-After" da API
+    em vez do backoff exponencial normal.
     """
     url = f"{config.FOOTBALL_DATA_BASE_URL}/{endpoint}"
     ultima_excecao = None
 
     for tentativa in range(1, config.HTTP_MAX_TENTATIVAS + 1):
+        _respeitar_limite_de_taxa()
         try:
             resp = requests.get(
                 url,
@@ -58,7 +76,12 @@ def _request_com_retry(endpoint: str, params: dict) -> dict:
                 tentativa, config.HTTP_MAX_TENTATIVAS, endpoint, exc
             )
             if tentativa < config.HTTP_MAX_TENTATIVAS:
-                time.sleep(config.HTTP_BACKOFF_SEGUNDOS * tentativa)
+                if exc.response is not None and exc.response.status_code == 429:
+                    espera = int(exc.response.headers.get("Retry-After", 30))
+                    logger.warning("Rate limit atingido — aguardando %ss antes de repetir.", espera)
+                    time.sleep(espera)
+                else:
+                    time.sleep(config.HTTP_BACKOFF_SEGUNDOS * tentativa)
 
     logger.error("Todas as tentativas falharam para %s. Erro: %s", endpoint, ultima_excecao)
     raise ConnectionError(f"Falha ao acessar a football-data.org ({endpoint}): {ultima_excecao}")
