@@ -244,13 +244,26 @@ def executar_pipeline_diario():
         email_notifier.enviar_mensagem(email_notifier.formatar_mensagem_erro(msg))
         return
 
-    # 5. Seleção dos melhores jogos do dia
+    # 5. Seleção dos melhores jogos do dia (pode incluir várias pernas por jogo)
     melhores_jogos = value_betting.selecionar_melhores_jogos(todas_oportunidades)
+    jogos_distintos = {jogo["descricao"] for jogo in melhores_jogos}
 
-    if len(melhores_jogos) < config.NUMERO_JOGOS_SELECIONADOS:
+    if len(jogos_distintos) < config.NUMERO_JOGOS_SELECIONADOS:
         msg = (
-            f"Apenas {len(melhores_jogos)} jogo(s) com value suficiente "
+            f"Apenas {len(jogos_distintos)} jogo(s) com value suficiente "
             f"(necessário: {config.NUMERO_JOGOS_SELECIONADOS}). Bilhete não gerado por segurança."
+        )
+        logger.warning(msg)
+        email_notifier.enviar_mensagem(email_notifier.formatar_mensagem_erro(msg))
+        return
+
+    prob_combinada = bankroll.probabilidade_combinada(melhores_jogos)
+    if prob_combinada < config.PROBABILIDADE_MINIMA_BILHETE:
+        msg = (
+            f"Bilhete com {len(melhores_jogos)} perna(s) tem probabilidade combinada "
+            f"estimada de apenas {prob_combinada * 100:.1f}% (mínimo exigido: "
+            f"{config.PROBABILIDADE_MINIMA_BILHETE * 100:.0f}%). Não gerado por segurança "
+            f"— risco combinado excessivo."
         )
         logger.warning(msg)
         email_notifier.enviar_mensagem(email_notifier.formatar_mensagem_erro(msg))

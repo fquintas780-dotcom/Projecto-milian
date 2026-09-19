@@ -55,8 +55,9 @@ def enviar_mensagem(texto: str, assunto: str = "Bot de Apostas — Relatório Di
 
 def formatar_relatorio_diario(bilhete: dict, saldo_banca: float) -> str:
     """
-    Monta o texto do relatório diário enviado ao usuário, com os jogos
-    selecionados, mercados, odds, stake e retorno esperado.
+    Monta o texto do relatório diário enviado ao usuário, agrupado por jogo
+    (cada jogo pode ter várias pernas/mercados combinados), com odds, stake
+    e retorno esperado.
     """
     linhas = []
     linhas.append("RELATÓRIO DIÁRIO — BOT DE APOSTAS")
@@ -64,21 +65,46 @@ def formatar_relatorio_diario(bilhete: dict, saldo_banca: float) -> str:
     linhas.append("")
     linhas.append("Jogos selecionados:")
 
-    for i, jogo in enumerate(bilhete["jogos"], start=1):
-        linhas.append(
-            f"{i}. {jogo['descricao']}\n"
-            f"   Mercado: {jogo['mercado']} — Seleção: {jogo['selecao']}\n"
-            f"   Odd: {jogo['odd']} | Prob. modelo: {jogo['probabilidade_modelo']*100:.1f}% "
-            f"| Value: +{jogo['value']*100:.1f}%"
-        )
+    pernas_por_jogo = {}
+    ordem_jogos = []
+    for jogo in bilhete["jogos"]:
+        descricao = jogo["descricao"]
+        if descricao not in pernas_por_jogo:
+            pernas_por_jogo[descricao] = []
+            ordem_jogos.append(descricao)
+        pernas_por_jogo[descricao].append(jogo)
+
+    algum_jogo_combinado = False
+    for i, descricao in enumerate(ordem_jogos, start=1):
+        pernas = pernas_por_jogo[descricao]
+        linhas.append(f"{i}. {descricao}")
+        for perna in pernas:
+            linhas.append(
+                f"   {perna['mercado']} — {perna['selecao']}: "
+                f"Odd {perna['odd']} | Prob. modelo {perna['probabilidade_modelo']*100:.1f}% "
+                f"| Value +{perna['value']*100:.1f}%"
+            )
+        if len(pernas) > 1:
+            algum_jogo_combinado = True
 
     linhas.append("")
     linhas.append("Resumo do bilhete:")
     linhas.append(f"Stake: {bilhete['stake']:.2f} (2% da banca)")
-    linhas.append(f"Odd total (dupla): {bilhete['odd_total']:.2f}")
+    linhas.append(f"Odd total: {bilhete['odd_total']:.2f}")
     linhas.append(f"Retorno potencial: {bilhete['retorno_potencial']:.2f}")
     linhas.append(f"Lucro líquido esperado: {bilhete['lucro_esperado']:.2f}")
     linhas.append("")
+
+    if algum_jogo_combinado:
+        linhas.append(
+            "Atenção: alguns jogos combinam mais de um mercado (mesma partida). "
+            "Essas seleções não são estatisticamente independentes entre si — "
+            "a probabilidade real de acertar todas costuma ser MENOR do que a "
+            "odd combinada sugere. Aposta apenas exatamente estas seleções, "
+            "sem adicionar outras próprias, para avaliar a fiabilidade real do bot."
+        )
+        linhas.append("")
+
     linhas.append("Aposte com responsabilidade. Nenhum modelo estatístico garante lucro.")
 
     return "\n".join(linhas)

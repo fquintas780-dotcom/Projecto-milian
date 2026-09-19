@@ -18,6 +18,19 @@ import config
 logger = logging.getLogger("bot_apostas.bankroll")
 
 
+def probabilidade_combinada(jogos_selecionados: list) -> float:
+    """
+    Estima a probabilidade combinada do bilhete assumindo independência entre
+    as seleções — uma aproximação. Mercados do mesmo jogo (ex.: "Mais de 2.5
+    golos" e "Ambas Marcam") tendem a ser correlacionados na prática, então a
+    probabilidade real de acertar tudo costuma diferir desta estimativa.
+    """
+    probabilidade = 1.0
+    for jogo in jogos_selecionados:
+        probabilidade *= jogo["probabilidade_modelo"]
+    return round(probabilidade, 4)
+
+
 def calcular_stake(saldo_banca: float) -> float:
     """Calcula a stake fixa (2% da banca atual), arredondada a 2 casas decimais."""
     stake = round(saldo_banca * config.STAKE_PERCENTUAL, 2)

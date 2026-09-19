@@ -54,8 +54,9 @@ def _request_com_retry(url: str, params: dict) -> list:
 
 def buscar_odds_liga(nome_liga: str) -> list:
     """
-    Busca odds (mercados h2h e totals) para todos os jogos disponíveis de uma liga.
-    Retorna a lista bruta de eventos conforme retornada pela The Odds API.
+    Busca odds (mercados h2h, totals e btts) para todos os jogos disponíveis
+    de uma liga. Retorna a lista bruta de eventos conforme devolvida pela
+    The Odds API.
     """
     sport_key = SPORT_KEYS.get(nome_liga)
     if not sport_key:
@@ -66,7 +67,7 @@ def buscar_odds_liga(nome_liga: str) -> list:
     params = {
         "apiKey": config.ODDS_API_KEY,
         "regions": "eu,uk",
-        "markets": "h2h,totals",
+        "markets": "h2h,totals,btts",
         "oddsFormat": "decimal",
     }
 
@@ -87,6 +88,8 @@ def encontrar_odds_para_jogo(eventos_liga: list, time_mandante: str, time_visita
         "1x2": {"casa": float, "empate": float, "fora": float},
         "over_2_5": float,
         "under_2_5": float,
+        "btts_sim": float,
+        "btts_nao": float,
     }
     Ou {} se o jogo não for encontrado nas cotações.
     """
@@ -104,6 +107,8 @@ def encontrar_odds_para_jogo(eventos_liga: list, time_mandante: str, time_visita
         "1x2": {"casa": 0.0, "empate": 0.0, "fora": 0.0},
         "over_2_5": 0.0,
         "under_2_5": 0.0,
+        "btts_sim": 0.0,
+        "btts_nao": 0.0,
     }
 
     for casa_aposta in evento.get("bookmakers", []):
@@ -125,6 +130,14 @@ def encontrar_odds_para_jogo(eventos_liga: list, time_mandante: str, time_visita
                             melhores["over_2_5"] = max(melhores["over_2_5"], outcome["price"])
                         elif outcome["name"].lower() == "under":
                             melhores["under_2_5"] = max(melhores["under_2_5"], outcome["price"])
+
+            elif mercado["key"] == "btts":
+                for outcome in mercado["outcomes"]:
+                    nome = outcome["name"].lower()
+                    if nome == "yes":
+                        melhores["btts_sim"] = max(melhores["btts_sim"], outcome["price"])
+                    elif nome == "no":
+                        melhores["btts_nao"] = max(melhores["btts_nao"], outcome["price"])
 
     return melhores
 
