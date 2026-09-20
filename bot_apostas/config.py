@@ -44,7 +44,7 @@ EMAIL_SMTP_PORT = int(os.getenv("EMAIL_SMTP_PORT", "465"))
 # ----------------------------------------------------------------------
 BANCA_INICIAL = float(os.getenv("BANCA_INICIAL", "2000.0"))
 STAKE_PERCENTUAL = 0.02          # 2% da banca por aposta (regra fixa)
-NUMERO_JOGOS_SELECIONADOS = 2    # quantidade de jogos por bilhete (dupla)
+NUMERO_JOGOS_SELECIONADOS = 5    # quantidade de jogos por bilhete
 VALUE_MINIMO = 0.05              # edge mínimo (5%) para considerar "value bet"
 VALUE_MAXIMO = 0.30              # acima disto é mais provável ruído/erro do que oportunidade real
 ODD_MINIMA_ACEITAVEL = 1.30      # filtra odds "lixo" abaixo desse valor
