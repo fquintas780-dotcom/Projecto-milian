@@ -45,12 +45,12 @@ EMAIL_SMTP_PORT = int(os.getenv("EMAIL_SMTP_PORT", "465"))
 BANCA_INICIAL = float(os.getenv("BANCA_INICIAL", "2000.0"))
 STAKE_PERCENTUAL = 0.02          # 2% da banca por aposta (regra fixa)
 NUMERO_JOGOS_SELECIONADOS = 5    # quantidade de jogos por bilhete
-VALUE_MINIMO = 0.05              # edge mínimo (5%) para considerar "value bet"
+VALUE_MINIMO = 0.02              # edge mínimo (2%) para considerar "value bet"
 VALUE_MAXIMO = 0.30              # acima disto é mais provável ruído/erro do que oportunidade real
 ODD_MINIMA_ACEITAVEL = 1.30      # filtra odds "lixo" abaixo desse valor
 ODD_MAXIMA_ACEITAVEL = 4.50      # evita long-shots com alta variância
 MAX_PERNAS_POR_JOGO = 2          # limite de mercados combinados no mesmo jogo (1X2 + Over/Under 2.5)
-PROBABILIDADE_MINIMA_BILHETE = 0.05  # abaixo disto, o bilhete combinado é rejeitado por segurança
+PROBABILIDADE_MINIMA_BILHETE = 0.01  # abaixo disto, o bilhete combinado é rejeitado por segurança
 
 # Ligas monitoradas (códigos da football-data.org — todas incluídas no plano
 # gratuito, com acesso à época atual)
