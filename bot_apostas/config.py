@@ -49,7 +49,7 @@ VALUE_MINIMO = 0.02              # edge mínimo (2%) para considerar "value bet"
 VALUE_MAXIMO = 0.60              # acima disto é mais provável ruído/erro do que oportunidade real
 ODD_MINIMA_ACEITAVEL = 1.30      # filtra odds "lixo" abaixo desse valor
 ODD_MAXIMA_ACEITAVEL = 4.50      # evita long-shots com alta variância
-MAX_PERNAS_POR_JOGO = 2          # limite de mercados combinados no mesmo jogo (1X2 + Over/Under 2.5)
+MAX_PERNAS_POR_JOGO = 1          # apenas o mercado de maior value por jogo (evita correlação dentro do mesmo jogo)
 PROBABILIDADE_MINIMA_BILHETE = 0.01  # abaixo disto, o bilhete combinado é rejeitado por segurança
 
 # Ligas monitoradas (códigos da football-data.org — todas incluídas no plano
