@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Brasa &amp; Gelo — Cardápio</title>
+<title>Cardápio Brasa &amp; Gelo</title>
 <meta name="description" content="Brasa & Gelo, Lubango: hambúrgueres na brasa, gelados na medida. Veja o cardápio e peça pelo WhatsApp.">
 <meta name="theme-color" content="#111111">
 <meta property="og:title" content="Brasa & Gelo — Cardápio">
@@ -11,6 +11,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111'/%3E%3Cpath d='M32 10c4 9 14 13 14 26a14 14 0 0 1-28 0c0-7 4-11 7-14 0 5 2 8 5 9-1-8 0-15 2-21z' fill='%23e8590c'/%3E%3C/svg%3E">
 <style>
 :root{
+  color-scheme:dark;
   --carvao:#111;
   --carvao-2:#1a1715;
   --choco:#2b1a12;
@@ -49,7 +50,7 @@ a{color:var(--laranja-2)}
 
 /* ---------- Cabeçalho fixo ---------- */
 .top{
-  position:sticky;top:0;z-index:20;
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
   background:rgba(17,17,17,.86);
   -webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);
   border-bottom:1px solid var(--linha);
@@ -145,9 +146,8 @@ section{padding-top:22px}
 .extra .qty.show{display:inline}
 
 /* Animação de entrada */
-.js .reveal{opacity:0;transform:translateY(18px)}
-.js .reveal.in{opacity:1;transform:none;transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1)}
-@media (prefers-reduced-motion:reduce){.js .reveal{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){.reveal.in{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}}
+@keyframes rise{from{opacity:.25;transform:translateY(18px)}}
 
 /* ---------- Rodapé ---------- */
 footer{margin-top:36px;padding:28px 0 12px;border-top:1px solid var(--linha);text-align:center;color:var(--texto-2);font-size:.9rem}
