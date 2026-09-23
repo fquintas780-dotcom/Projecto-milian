@@ -1,6 +1,6 @@
 # Brasa & Gelo — cardápio digital (demonstração)
 
-`cardapio.html` é um ficheiro único (HTML + CSS + JS + fotos em base64, ~320 KB)
+`cardapio.html` é um ficheiro único (HTML + CSS + JS + fotos em base64, ~350 KB)
 que funciona sozinho: basta abri-lo ou publicá-lo num alojamento estático.
 
 ## Atualizar fotos, textos ou preços
