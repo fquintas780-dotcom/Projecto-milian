@@ -99,6 +99,11 @@ section{padding-top:22px}
 .photo{position:relative;aspect-ratio:4/3;background:#1c120d;overflow:hidden}
 .photo img,.photo svg{width:100%;height:100%;object-fit:cover}
 .photo::after{content:"";position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(transparent,rgba(43,26,18,.9));pointer-events:none}
+.zoom{display:block;width:100%;height:100%;padding:0;border:0;background:none;cursor:zoom-in;border-radius:0}
+.zoom:focus-visible{outline-offset:-4px}
+.zoom-hint{position:absolute;z-index:1;right:12px;bottom:12px;width:36px;height:36px;border-radius:999px;display:grid;place-items:center;background:rgba(17,17,17,.7);color:var(--texto);pointer-events:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.zoom-hint svg{width:18px;height:18px}
+.tag,.in-cart{pointer-events:none}
 .tag{position:absolute;z-index:1;top:12px;left:12px;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:var(--dourado);color:var(--carvao)}
 .in-cart{position:absolute;z-index:1;top:12px;right:12px;min-width:32px;height:32px;padding:0 10px;border-radius:999px;display:none;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;background:var(--laranja);color:var(--carvao);box-shadow:0 4px 12px rgba(0,0,0,.4)}
 .in-cart.show{display:inline-flex}
@@ -215,6 +220,21 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
 .clear{display:block;margin:8px auto 0;min-height:44px;padding:0 16px;background:none;border:0;color:var(--texto-2);font-weight:700;text-decoration:underline;cursor:pointer}
 
 /* Aviso (toast) */
+/* Vista ampliada da foto */
+dialog.viewer{max-width:none;max-height:none;width:100%;height:100%;margin:0;border-radius:0;background:rgba(10,8,7,.96);box-shadow:none;padding:0}
+dialog.viewer::backdrop{background:rgba(0,0,0,.9)}
+@media (prefers-reduced-motion:no-preference){dialog.viewer[open]{animation:fade .25s ease}}
+@keyframes fade{from{opacity:0}}
+.viewer-in{display:flex;flex-direction:column;height:100%;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.viewer-top{display:flex;justify-content:flex-end}
+.viewer-top .icon-btn{background:rgba(255,255,255,.08)}
+.viewer figure{flex:1;min-height:0;margin:8px 0 0;display:flex;flex-direction:column;gap:14px}
+.viewer-img{flex:1;min-height:0;display:grid;place-items:center}
+.viewer-img img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:14px;box-shadow:var(--sombra)}
+.viewer figcaption{display:flex;align-items:center;gap:12px;max-width:720px;width:100%;margin:0 auto}
+.viewer figcaption .nm{flex:1;min-width:0}
+.viewer figcaption strong{display:block;font-size:1.15rem;font-weight:800}
+.viewer figcaption .price{font-size:1.05rem}
 .toast{position:fixed;z-index:40;left:50%;top:calc(var(--header-h) + 10px);transform:translate(-50%,-10px);opacity:0;pointer-events:none;background:#f6efe9;color:var(--carvao);font-weight:800;font-size:.9rem;padding:10px 16px;border-radius:999px;box-shadow:var(--sombra);transition:.25s;white-space:nowrap}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -301,6 +321,23 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
   </div>
 </dialog>
 
+<dialog class="viewer" id="viewer" aria-labelledby="viewerName">
+  <div class="viewer-in">
+    <div class="viewer-top">
+      <button class="icon-btn" type="button" id="closeViewer" aria-label="Fechar foto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <figure>
+      <div class="viewer-img"><img id="viewerImg" alt=""></div>
+      <figcaption>
+        <div class="nm"><strong id="viewerName"></strong><span class="price" id="viewerPrice"></span></div>
+        <button class="add" type="button" id="viewerAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Adicionar</span></button>
+      </figcaption>
+    </figure>
+  </div>
+</dialog>
+
 <div class="toast" id="toast" aria-hidden="true"></div>
 <div class="sr-only" id="live" aria-live="polite"></div>
 
@@ -308,7 +345,7 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
 (function () {
   "use strict";
   var WHATSAPP = "244900000000";
-  var PHOTOS = /*__PHOTOS__*/{};
+  var PHOTOS = /*__PHOTOS__*/{files: {}, items: {}};
 
   var PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 
@@ -396,10 +433,14 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
   });
 
   // ---------- render ----------
+  var ZOOM = '<span class="zoom-hint" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span>';
+
   function photoHTML(it) {
-    var src = PHOTOS[it.img];
-    if (src) return '<img src="' + src + '" alt="' + esc(it.name) + '" width="736" height="552" decoding="async"' + (it.eager ? "" : ' loading="lazy"') + ">";
-    return it.img === "hotdog" ? HOTDOG_SVG : "";
+    var p = PHOTOS.items[it.img];
+    if (!p) return it.img === "hotdog" ? HOTDOG_SVG : "";
+    var img = '<img src="' + (p.src || PHOTOS.files[p.file]) + '" alt="' + esc(it.name) + '" width="736" height="552" decoding="async"' +
+      (p.pos ? ' style="object-position:' + p.pos + '"' : "") + (it.eager ? "" : ' loading="lazy"') + ">";
+    return '<button class="zoom" type="button" data-zoom="' + it.id + '" aria-label="Ver foto completa: ' + esc(it.name) + '">' + img + "</button>" + ZOOM;
   }
 
   function cardHTML(it) {
@@ -551,6 +592,35 @@ dialog::backdrop{background:rgba(0,0,0,.65)}
   $("closeCart").addEventListener("click", closeCart);
   dlg.addEventListener("click", function (e) { if (e.target === dlg) closeCart(); });
   dlg.addEventListener("close", function () { $("cartBar").focus(); });
+
+  // ---------- foto ampliada ----------
+  var viewer = $("viewer"), viewing = null, zoomFrom = null;
+  var ITEMS = {};
+  MENU.forEach(function (s) { s.items.forEach(function (it) { ITEMS[it.id] = it; }); });
+  function openViewer(id, from) {
+    var it = ITEMS[id], p = PHOTOS.items[it.img];
+    viewing = id; zoomFrom = from;
+    $("viewerImg").src = PHOTOS.files[p.file];
+    $("viewerImg").alt = it.name;
+    $("viewerName").textContent = it.name;
+    $("viewerPrice").innerHTML = document.querySelector('[data-price="' + id + '"]').innerHTML;
+    $("viewerAdd").setAttribute("aria-label", "Adicionar " + it.name + " ao pedido");
+    if (typeof viewer.showModal === "function") viewer.showModal(); else viewer.setAttribute("open", "");
+  }
+  function closeViewer() { if (viewer.close) viewer.close(); else viewer.removeAttribute("open"); }
+  main.addEventListener("click", function (e) {
+    var z = e.target.closest("[data-zoom]");
+    if (z) openViewer(z.getAttribute("data-zoom"), z);
+  });
+  $("closeViewer").addEventListener("click", closeViewer);
+  viewer.addEventListener("click", function (e) {
+    if (e.target === viewer || e.target.classList.contains("viewer-img") || e.target.tagName === "FIGURE") closeViewer();
+  });
+  viewer.addEventListener("close", function () { if (zoomFrom) zoomFrom.focus(); });
+  $("viewerAdd").addEventListener("click", function () {
+    var btn = document.querySelector('[data-add="' + viewing + '"]');
+    if (btn) btn.click();
+  });
 
   $("lines").addEventListener("click", function (e) {
     var b = e.target.closest("button");
