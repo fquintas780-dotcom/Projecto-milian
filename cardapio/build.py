@@ -23,7 +23,7 @@ QUALITY = 68
 PHOTOS = {
     "burger-bacon": ("burger-bacon.jpeg", 0.50),
     "burger-classico": ("burger-classico.jpeg", 0.66),
-    "hotdog": ("hotdog.jpeg", 0.50),
+    "hotdog": ("hotdog.jpeg", 0.52),
     "pizza": ("pizza.jpeg", 0.50),
     "picole-chocolate": ("picole-chocolate.jpeg", 0.36),
     "picole-trio": ("picole-trio.jpeg", 0.56),
